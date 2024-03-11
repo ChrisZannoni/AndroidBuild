@@ -18,6 +18,7 @@ pipeline {
                     credentialsId: 'jenkins-aws-key'
                 ]]) {
                     sh '''
+                    set -x
                     aws ec2 start-instances --instance-ids i-06386b350ad842edb
                     aws ec2 wait instance-running --instance-ids i-06386b350ad842edb
                     '''
@@ -63,6 +64,7 @@ pipeline {
                 credentialsId: 'jenkins-aws-key'
             ]]) {
                 sh '''
+                set -x
                 aws ec2 stop-instances --instance-ids i-06386b350ad842edb
                 aws ec2 wait instance-stopped --instance-ids i-06386b350ad842edb
                 '''
