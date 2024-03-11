@@ -46,10 +46,13 @@ pipeline {
             }
         }
         
-        stage('Archive') {
+        stage('Archive Artifacts') {
             agent { label 'LargeAgent2' }
             steps {
-                archiveArtifacts artifacts: '/home/ubuntu/AndroidSource/out/target/product/**/*', fingerprint: true
+                // Change the current directory to '/home/ubuntu/AndroidSource' before archiving
+                dir('/home/ubuntu/AndroidSource') {
+                    archiveArtifacts artifacts: 'out/target/product/generic/*', fingerprint: true
+                }
             }
         }
     }
