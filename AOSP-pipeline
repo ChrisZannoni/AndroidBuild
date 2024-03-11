@@ -48,19 +48,26 @@ pipeline {
         
         stage('Organize and Archive Artifacts') {
             agent { label 'LargeAgent2' }
-            steps {
-                dir('/home/ubuntu/AndroidSource') {
+                steps {
                     script {
-                        // Create a directory named after the BUILD_TARGET parameter
-                        sh "mkdir -p out/target/product/generic/${params.BUILD_TARGET}"
-                
-                        // Move or copy .img files into the BUILD_TARGET-named directory
-                        sh "cp out/target/product/generic/*.img out/target/product/generic/${params.BUILD_TARGET}/"
-                
-                        // Archive artifacts from the newly created directory
-                        archiveArtifacts artifacts: "out/target/product/generic/${params.BUILD_TARGET}/*.img", fingerprint: true
+                        // Define a temporary directory for artifacts at the workspace root
+                        def tempDir = "${WORKSPACE}/${params.BUILD_TARGET}"
+            
+                        // Create the temporary directory
+                        sh "mkdir -p ${tempDir}"
+            
+                        // Copy .img files to the temporary directory
+                        sh "cp out/target/product/generic/*.img ${tempDir}/"
+            
+                        // Change directory to the workspace root
+                        dir("${WORKSPACE}") {
+                            // Archive artifacts from the temporary directory, resulting in a flattened structure
+                            archiveArtifacts artifacts: "${params.BUILD_TARGET}/*.img", fingerprint: true
+                        }
+            
+                        // Optionally, clean up the temporary directory after archiving
+                        sh "rm -rf ${tempDir}"
                     }
-                }
             }
         }
     }
