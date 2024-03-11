@@ -1,23 +1,54 @@
 pipeline {
-    agent { label 'LargeAgent2' }
+    agent none
+    
+    parameters {
+        string(name: 'BUILD_TARGET', defaultValue: 'aosp_arm-trunk_staging-eng', description: 'The target to build with lunch')
+    }
+    
+    environment {
+        // Set the default AWS region for AWS CLI commands
+        AWS_DEFAULT_REGION = 'us-west-2'
+    }
 
     stages {
+        stage('Start EC2 Instance') {
+            agent { label 'main' }
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'jenkins-aws-key'
+                ]]) {
+                    sh '''
+                    aws ec2 start-instances --instance-ids i-06386b350ad842edb
+                    aws ec2 wait instance-running --instance-ids i-06386b350ad842edb
+                    '''
+                }
+            }
+        }
         
-        stage('Build') {
+        stage('Prepare Environment') {
+            agent { label 'LargeAgent2' }
             steps {
                 dir ('/home/ubuntu/AndroidSource') {
-
+                    sh 'bash -c "ccache -M 50G"'
+                }
+            }
+        }
+        
+        stage('Build') {
+            agent { label 'LargeAgent2' }
+            steps {
+                dir ('/home/ubuntu/AndroidSource') {
                     // "ccache -M 50G" Set the ccache limit to 50GB
                     // "m -j\\$(nproc)" Make and use all available cores
-                    sh 'bash -c "ccache -M 50G && source build/envsetup.sh && lunch aosp_arm-trunk_staging-eng && m -j\\$(nproc)"'
+                    sh "bash -c 'source build/envsetup.sh && lunch \${BUILD_TARGET} && m -j\$(nproc)'"
                 }
             }
         }
         
         stage('Archive') {
+            agent { label 'LargeAgent2' }
             steps {
-            
-                // Archive the build artifacts, e.g., system images
                 archiveArtifacts artifacts: '**/out/target/product/**/*', fingerprint: true
             }
         }
@@ -25,16 +56,23 @@ pipeline {
     
     post {
         always {
-            // Cleanup actions to always perform at the end of the build
             echo 'Cleaning up workspace'
-            cleanWs() // Clean the workspace
+            cleanWs()
+            echo 'Stopping AWS EC2 instance.'
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding', 
+                credentialsId: 'jenkins-aws-key'
+            ]]) {
+                sh '''
+                aws ec2 stop-instances --instance-ids i-06386b350ad842edb
+                aws ec2 wait instance-stopped --instance-ids i-06386b350ad842edb
+                '''
+            }
         }
         success {
-            // Actions to perform if the pipeline succeeds
             echo 'Build succeeded.'
         }
         failure {
-            // Actions to perform if the pipeline fails
             echo 'Build failed.'
         }
     }
