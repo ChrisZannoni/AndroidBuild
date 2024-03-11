@@ -2,17 +2,11 @@ pipeline {
     agent { label 'LargeAgent2' }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Sync the AOSP repository
-                sh 'repo init -u https://github.com/ChrisZannoni/AndroidBuild.git'
-                sh 'repo sync'
-            }
-        }
         
         stage('Prepare Environment') {
             steps {
                 sh '''
+                set -x
                 source build/envsetup.sh
                 ccache -M 50G // Set the ccache limit to 50GB
                 '''
@@ -22,6 +16,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
+                set -x
                 lunch aosp_arm-trunk_staging-eng
                 m -j$(nproc) // Using all available cores
                 '''
