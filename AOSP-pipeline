@@ -9,7 +9,7 @@ pipeline {
                     sh '''
                     #!/bin/bash
                     set -x
-                    source build/envsetup.sh
+                    . build/envsetup.sh
                     ccache -M 50G // Set the ccache limit to 50GB
                     '''
                 }
