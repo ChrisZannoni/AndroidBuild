@@ -7,13 +7,13 @@ pipeline {
             steps {
                 dir ('/home/ubuntu/AndroidSource') {
 
-                    sh '''
+                    sh(script: '''
                     #!/bin/bash
                     set -x
                     chmod +x ./build/envsetup.sh
                     ./build/envsetup.sh
                     ccache -M 50G // Set the ccache limit to 50GB
-                    '''
+                    ''', returnStdout: true)
                 }
             }
         }
