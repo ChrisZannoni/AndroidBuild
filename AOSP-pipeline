@@ -6,9 +6,11 @@ pipeline {
         stage('Prepare Environment') {
             steps {
                 dir ('/home/ubuntu/AndroidSource') {
+
                     sh '''
                     #!/bin/bash
                     set -x
+                    chmod +x ./build/envsetup.sh
                     ./build/envsetup.sh
                     ccache -M 50G // Set the ccache limit to 50GB
                     '''
