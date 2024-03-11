@@ -6,13 +6,17 @@ pipeline {
         stage('Build') {
             steps {
                 dir ('/home/ubuntu/AndroidSource') {
-                    sh 'bash -c "source build/envsetup.sh && lunch aosp_arm-trunk_staging-eng && m -j\\$(nproc)"'
+
+                    // "ccache -M 50G" Set the ccache limit to 50GB
+                    // "m -j\\$(nproc)" Make and use all available cores
+                    sh 'bash -c "ccache -M 50G && source build/envsetup.sh && lunch aosp_arm-trunk_staging-eng && m -j\\$(nproc)"'
                 }
             }
         }
         
         stage('Archive') {
             steps {
+            
                 // Archive the build artifacts, e.g., system images
                 archiveArtifacts artifacts: '**/out/target/product/**/*', fingerprint: true
             }
