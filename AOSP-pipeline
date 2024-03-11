@@ -1,5 +1,5 @@
 pipeline {
-    agent { label '!built-in' }
+    agent any
     
     parameters {
         string(name: 'BUILD_TARGET', defaultValue: 'aosp_arm-trunk_staging-eng', description: 'The target to build with lunch')
