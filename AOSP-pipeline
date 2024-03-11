@@ -49,7 +49,7 @@ pipeline {
         stage('Archive') {
             agent { label 'LargeAgent2' }
             steps {
-                archiveArtifacts artifacts: '**/out/target/product/**/*', fingerprint: true
+                archiveArtifacts artifacts: '/home/ubuntu/AndroidSource/out/target/product/**/*', fingerprint: true
             }
         }
     }
