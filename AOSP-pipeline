@@ -46,12 +46,20 @@ pipeline {
             }
         }
         
-        stage('Archive Artifacts') {
+        stage('Organize and Archive Artifacts') {
             agent { label 'LargeAgent2' }
             steps {
-                // Change the current directory to '/home/ubuntu/AndroidSource' before archiving
                 dir('/home/ubuntu/AndroidSource') {
-                    archiveArtifacts artifacts: 'out/target/product/generic/*', fingerprint: true
+                    script {
+                        // Create a directory named after the BUILD_TARGET parameter
+                        sh "mkdir -p out/target/product/generic/${params.BUILD_TARGET}"
+                
+                        // Move or copy .img files into the BUILD_TARGET-named directory
+                        sh "cp out/target/product/generic/*.img out/target/product/generic/${params.BUILD_TARGET}/"
+                
+                        // Archive artifacts from the newly created directory
+                        archiveArtifacts artifacts: "out/target/product/generic/${params.BUILD_TARGET}/*.img", fingerprint: true
+                    }
                 }
             }
         }
