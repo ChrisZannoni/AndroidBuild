@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent { label 'Built-In Node' }
     
     parameters {
         string(name: 'BUILD_TARGET', defaultValue: 'aosp_arm-trunk_staging-eng', description: 'The target to build with lunch')
@@ -12,7 +12,6 @@ pipeline {
 
     stages {
         stage('Start EC2 Instance') {
-            agent { label 'main' }
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding', 
