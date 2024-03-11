@@ -1,0 +1,58 @@
+pipeline {
+    agent { label 'LargeSlave' }
+
+    environment {
+        // Define necessary environment variables for AOSP build
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Sync the AOSP repository
+                sh 'repo init -u https://github.com/ChrisZannoni/AndroidBuild.git'
+                sh 'repo sync'
+            }
+        }
+        
+        stage('Prepare Environment') {
+            steps {
+                sh '''
+                source build/envsetup.sh
+                ccache -M 50G // Set the ccache limit to 50GB
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh '''
+                lunch aosp_arm-trunk_staging-eng
+                m -j$(nproc) // Using all available cores
+                '''
+            }
+        }
+        
+        stage('Archive') {
+            steps {
+                // Archive the build artifacts, e.g., system images
+                archiveArtifacts artifacts: '**/out/target/product/**/*', fingerprint: true
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Cleanup actions to always perform at the end of the build
+            echo 'Cleaning up workspace'
+            cleanWs() // Clean the workspace
+        }
+        success {
+            // Actions to perform if the pipeline succeeds
+            echo 'Build succeeded.'
+        }
+        failure {
+            // Actions to perform if the pipeline fails
+            echo 'Build failed.'
+        }
+    }
+}
