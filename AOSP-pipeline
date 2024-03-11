@@ -5,21 +5,25 @@ pipeline {
         
         stage('Prepare Environment') {
             steps {
-                sh '''
-                set -x
-                source build/envsetup.sh
-                ccache -M 50G // Set the ccache limit to 50GB
-                '''
+                dir ('/home/ubuntu/AndroidSource') {
+                    sh '''
+                    set -x
+                    source build/envsetup.sh
+                    ccache -M 50G // Set the ccache limit to 50GB
+                    '''
+                }
             }
         }
 
         stage('Build') {
             steps {
-                sh '''
-                set -x
-                lunch aosp_arm-trunk_staging-eng
-                m -j$(nproc) // Using all available cores
-                '''
+                dir ('/home/ubuntu/AndroidSource') {
+                    sh '''
+                    set -x
+                    lunch aosp_arm-trunk_staging-eng
+                    m -j$(nproc) // Using all available cores
+                    '''
+                }
             }
         }
         
