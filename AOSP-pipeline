@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'LargeSlave' }
+    agent { label 'LargeAgent2' }
 
     environment {
         // Define necessary environment variables for AOSP build
