@@ -30,7 +30,7 @@ pipeline {
             agent { label 'LargeAgent2' }
             steps {
                 dir ('/home/ubuntu/AndroidSource') {
-                    sh 'bash -c "ccache -M 50G"'
+                    sh 'bash -c "ccache -M 50G"' // Set the ccache limit to 50GB
                 }
             }
         }
@@ -39,8 +39,8 @@ pipeline {
             agent { label 'LargeAgent2' }
             steps {
                 dir ('/home/ubuntu/AndroidSource') {
-                    // "ccache -M 50G" Set the ccache limit to 50GB
-                    // "m -j\\$(nproc)" Make and use all available cores
+
+                    // Make and use all available cores
                     sh "bash -c 'source build/envsetup.sh && lunch \${BUILD_TARGET} && m -j\$(nproc)'"
                 }
             }
